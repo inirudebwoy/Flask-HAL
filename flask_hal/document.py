@@ -41,6 +41,9 @@ class BaseDocument(object):
         self.embedded = embedded or {}
         self.links = links or link.Collection()
 
+    def __str__(self):
+        return str(self.to_dict())
+
     @property
     def links(self):
         return self._links

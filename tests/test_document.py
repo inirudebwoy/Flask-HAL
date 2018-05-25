@@ -7,6 +7,54 @@ from flask_hal import link
 from flask_hal.document import Document, Embedded
 
 
+def test_empty_document_str():
+    app = flask.Flask(__name__)
+    with app.test_request_context('/entity/231'):
+        document = Document()
+        assert str(document) == str({'_links': {'self': {'href': '/entity/231'}}})
+
+
+def test_str_with_embedded_document():
+    app = flask.Flask(__name__)
+    with app.test_request_context('/entity/231'):
+        document = Document(
+            embedded={
+                'orders': Embedded(
+                    embedded={'details': Embedded(
+                        data={'details': {}}
+                    )},
+                    links=link.Collection(
+                        link.Link('foo', 'www.foo.com'),
+                        link.Link('boo', 'www.boo.com')
+                    ),
+                    data={'total': 30},
+                )
+            },
+            data={'currentlyProcessing': 14}
+        )
+        expected = {
+            '_links': {
+                'self': {
+                    'href': flask.request.path
+                }
+            },
+            '_embedded': {
+                'orders': {
+                    '_links': {
+                        'foo': {'href': 'www.foo.com'},
+                        'boo': {'href': 'www.boo.com'}
+                    },
+                    '_embedded': {
+                        'details': {'details': {}}
+                    },
+                    'total': 30,
+                }
+            },
+            'currentlyProcessing': 14
+        }
+        assert str(expected) == str(document)
+
+
 def test_document_should_have_link_self():
     app = flask.Flask(__name__)
     with app.test_request_context('/entity/231'):
